@@ -10,7 +10,7 @@ packages used by the examples:
 ```sh
 uv venv .venv --python 3.12
 source .venv/bin/activate
-uv pip install torch numpy
+uv pip install torch torchvision transformers numpy pydot
 ```
 
 PyTorch uses MPS for GPU work on a supported Mac. Check that it is available
@@ -21,18 +21,83 @@ with `python check-mps.py`.
 ```sh
 uv venv .venv --python 3.12
 source .venv/bin/activate
-uv pip install torch numpy --torch-backend=auto
+uv pip install torch torchvision transformers numpy pydot --torch-backend=auto
 ```
 
 The `auto` backend selects a compatible PyTorch build for an available GPU,
 or a CPU build when no supported GPU is found.
 
-## Run the example
+## Run the examples
 
 ```sh
+python check-mps.py                 # macOS only
+python list-backends.py
 python sin-cos-tensor.py
 python sin-cos-tensor.py --cpu
+python resnet50.py
+python resnet50.py --cpu
+python transformers-pretrained.py
 ```
 
-The second command forces CPU execution. Run the commands from the repository
-root so Python can import `utilities.py`.
+`check-mps.py` checks MPS availability and runs a small tensor operation on
+it. `list-backends.py` prints the available `torch.compile` backends.
+The `--cpu` option forces CPU execution. Run the commands from the repository
+root so Python can import the shared helpers in `utilities.py`.
+
+`sin-cos-tensor.py` compiles a cosine and sine function on a 10,000-element
+tensor, times its first call, and prints the first 10 results.
+
+`resnet50.py` times its first compiled call. The model uses random weights,
+so no pretrained weights are downloaded.
+
+`transformers-pretrained.py` uses pretrained `bert-base-uncased` weights. The
+first run downloads and caches the model and tokenizer. It times model calls,
+excluding tokenization, with a fixed 32-token input. It accepts `--iterations N`
+for repeated-call timing.
+
+## Draw computation graphs
+
+The graph examples use `pydot` and the Graphviz `dot` executable to write
+`.dot` and `.svg` files. On macOS, install Graphviz with
+`brew install graphviz`. On Linux, install the `graphviz` package with your
+distribution's package manager.
+
+```sh
+python relu-graph.py
+python sigmoid-graph.py
+python shape-condition.py
+python resnet50-graph.py
+```
+
+`relu-graph.py` and `sigmoid-graph.py` capture small FX graphs through a custom
+`torch.compile` backend. They print each graph, write a DOT and SVG pair, and
+check that the compiled result matches eager execution.
+
+`shape-condition.py` compiles a function that selects ReLU or sigmoid based on
+the input shape. It runs with 128 × 128 and 256 × 256 tensors and writes a
+separate DOT and SVG pair for each backend invocation, named after the shape
+(for example, `shape-condition-128x128.svg`).
+
+`resnet50-graph.py` traces the ResNet-50 model with `torch.fx.symbolic_trace`
+and writes `resnet50.dot` and `resnet50.svg`. The generated graph files are
+ignored by Git.
+
+## Inspect compilation output
+
+Set `TORCH_COMPILE_DEBUG=1` when running an example to see compiler debug
+messages and save compilation artifacts:
+
+```sh
+TORCH_COMPILE_DEBUG=1 python sin-cos-tensor.py
+```
+
+PyTorch writes a `torch_compile_debug/run_.../` directory in the current
+directory. Look under its `torchinductor/` subdirectories for
+`fx_graph_runnable.py` and `fx_graph_transformed.py` (the captured and
+transformed graphs), `ir_pre_fusion.txt` and `ir_post_fusion.txt` (compiler
+intermediate representations), and `output_code.py` (generated code, including
+kernel code when applicable). The terminal output also shows the debug trace
+path. Available files depend on the graph and device. For more details, see
+the PyTorch compiler debugging guide:
+
+<https://docs.pytorch.org/docs/stable/torch.compiler_troubleshooting_old.html>
