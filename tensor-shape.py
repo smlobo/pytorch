@@ -23,11 +23,13 @@ print("row sums:", probabilities.sum(dim=-1))
 
 # float16 vs float32
 projected16 = x.half() @ weight.half() + bias.half()
-print(f"float16 vs float32 projected: {(projected16.float() - projected).abs().max()}")
+print(f"float16 vs float32 projected: "
+      f"{(projected16.float() - projected).abs().max()}")
 
 # stride + transpose.stride
 print(f"projected.stride() = {projected.stride()}")
-print(f"projected.transpose(-2, -1).stride() = {projected.transpose(-2, -1).stride()}")
+print(f"projected.transpose(-2, -1).stride() = "
+      f"{projected.transpose(-2, -1).stride()}")
 
 # bias.shape == (1, T, 1)
 print()
@@ -44,7 +46,8 @@ for name, tensor in [
     ("scores", scores),
     ("probabilities", probabilities),
 ]:
-    print(f"bias[1,{T},1]: {name}, {tensor.shape}, {tensor.dtype}, {tensor.device}, {tensor.stride()}")
+    print(f"bias[1,{T},1]: {name}, {tensor.shape}, {tensor.dtype}, "
+          f"{tensor.device}, {tensor.stride()}")
 
 print(f"row sums (bias[1,{T},1]): {probabilities.sum(dim=-1)}")
 
@@ -65,6 +68,7 @@ for name, tensor in [
     ("scores", scores),
     ("probabilities", probabilities),
 ]:
-    print(f"float16: {name}, {tensor.shape}, {tensor.dtype}, {tensor.device}, {tensor.stride()}")
+    print(f"float16: {name}, {tensor.shape}, {tensor.dtype}, {tensor.device}, "
+          f"{tensor.stride()}")
 
 print("row sums (float16):", probabilities.sum(dim=-1))

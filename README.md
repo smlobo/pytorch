@@ -27,22 +27,18 @@ uv pip install torch torchvision transformers numpy pydot --torch-backend=auto
 The `auto` backend selects a compatible PyTorch build for an available GPU,
 or a CPU build when no supported GPU is found.
 
-## Run the examples
+## Learning examples
+
+### Basic compilation
 
 ```sh
-python check-mps.py                 # macOS only
-python list-backends.py
 python sin-cos-tensor.py
 python sin-cos-tensor.py --cpu
 python resnet50.py
-python resnet50.py --cpu
 python transformers-pretrained.py
+python tensor-shape.py
+python scaled-dot-product-attention.py
 ```
-
-`check-mps.py` checks MPS availability and runs a small tensor operation on
-it. `list-backends.py` prints the available `torch.compile` backends.
-The `--cpu` option forces CPU execution. Run the commands from the repository
-root so Python can import the shared helpers in `utilities.py`.
 
 `sin-cos-tensor.py` compiles a cosine and sine function on a 10,000-element
 tensor, times its first call, and prints the first 10 results.
@@ -54,6 +50,21 @@ so no pretrained weights are downloaded.
 first run downloads and caches the model and tokenizer. It times model calls,
 excluding tokenization, with a fixed 32-token input. It accepts `--iterations N`
 for repeated-call timing.
+
+See [Draw computation graphs](#draw-computation-graphs) below.
+
+### Tensor shapes
+
+`tensor-shape.py` examines tensor shapes, data types, devices, and strides
+through projection, transposition, matrix multiplication, broadcasting, and
+softmax. It also compares float16 and float32 results.
+
+### Scaled Dot Product Attention
+
+`scaled-dot-product-attention.py` builds queries, keys, and values for two
+attention heads. It implements scaled dot product attention from matrix
+multiplication, scaling, and softmax, then checks its output against
+`torch.nn.functional.scaled_dot_product_attention`.
 
 ## Draw computation graphs
 
