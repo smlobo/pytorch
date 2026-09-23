@@ -29,7 +29,7 @@ print(f"float16 vs float32 projected: {(projected16.float() - projected).abs().m
 print(f"projected.stride() = {projected.stride()}")
 print(f"projected.transpose(-2, -1).stride() = {projected.transpose(-2, -1).stride()}")
 
-# bias.shape == (1, H, 1)
+# bias.shape == (1, T, 1)
 print()
 
 bias = torch.randn(1, T, 1, device=device, dtype=torch.float16)
