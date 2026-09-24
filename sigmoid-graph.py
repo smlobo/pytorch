@@ -1,7 +1,8 @@
 from pathlib import Path
 
 import torch
-from torch.fx.passes.graph_drawer import FxGraphDrawer
+
+from utilities import draw_dot_svg_graph
 
 
 def step(x):
@@ -10,10 +11,9 @@ def step(x):
 
 def inspect_backend(graph_module, example_inputs):
     print(graph_module.graph)
-    dot = FxGraphDrawer(graph_module, "sigmoid_graph").get_dot_graph()
-    output_base = Path(__file__).with_suffix("")
-    output_base.with_suffix(".dot").write_text(dot.to_string())
-    dot.write_svg(str(output_base.with_suffix(".svg")))
+    draw_dot_svg_graph(
+        graph_module, Path(__file__).stem, example_inputs
+    )
     return graph_module.forward
 
 
