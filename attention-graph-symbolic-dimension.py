@@ -5,11 +5,11 @@ from utilities import get_device, draw_dot_svg_graph
 
 
 # B == batch size
-# T == tokens per sequence
+# T == tokens per sequence (seq_len)
 # D == input features per token
 # H == total projected (hidden) feature width
 # num_heads == number of atention heads
-B, T, D, H, num_heads = 2, 4, 8, 16, 2
+B, T, D, H, num_heads = 2, None, 8, 16, 2
 
 # head dimension == 8
 head_dim = H // num_heads
@@ -22,7 +22,7 @@ class ManualAttention(torch.nn.Module):
         return weights @ v                      # [B, num_heads, T, head_dim]
 
 
-def generate(device="cpu"):
+def generate(T, device="cpu"):
     q = torch.randn(B, num_heads, T, head_dim, device=device)
     k = torch.randn(B, num_heads, T, head_dim, device=device)
     v = torch.randn(B, num_heads, T, head_dim, device=device)
@@ -32,15 +32,31 @@ def generate(device="cpu"):
 def main():
     device_string = get_device()
     print(f"Using device: {device_string}")
-    q, k, v = generate(device=device_string)
+
+    q4, k4, v4 = generate(T=4, device=device_string)
+    q8, k8, v8 = generate(T=8, device=device_string)
+    q20, k20, v20 = generate(T=20, device=device_string)
+
+    seq_len = torch.export.Dim("seq_len", min=2, max=16)
+    dynamic_shapes = {
+        "q": {2: seq_len},
+        "k": {2: seq_len},
+        "v": {2: seq_len},
+    }
+
     model = ManualAttention()
-    exported = torch.export.export(model, (q, k, v))
+    exported = torch.export.export(
+        model, (q4, k4, v4), dynamic_shapes=dynamic_shapes
+    )
 
     print(exported.graph_module.print_readable(print_output=False))
+    print(f"Graph constraints: {exported.range_constraints}")
     draw_dot_svg_graph(
-        exported.graph_module, Path(__file__).stem, (q, k, v)
+        exported.graph_module, Path(__file__).stem, (q4, k4, v4)
     )
-    torch.testing.assert_close(exported.module()(q, k, v), model(q, k, v))
+
+    for inputs in ((q4, k4, v4), (q8, k8, v8)):
+        torch.testing.assert_close(exported.module()(*inputs), model(*inputs))
 
 
 if __name__ == "__main__":

@@ -78,6 +78,8 @@ python relu-graph.py
 python sigmoid-graph.py
 python shape-condition.py
 python resnet50-graph.py
+python attention-graph.py
+python attention-graph-symbolic-dimension.py
 ```
 
 `relu-graph.py` and `sigmoid-graph.py` capture small FX graphs through a custom
@@ -92,6 +94,16 @@ separate DOT and SVG pair for each backend invocation, named after the shape
 `resnet50-graph.py` traces the ResNet-50 model with `torch.fx.symbolic_trace`
 and writes `resnet50.dot` and `resnet50.svg`. The generated graph files are
 ignored by Git.
+
+`attention-graph.py` defines a manual scaled dot product attention module and
+captures it with `torch.export.export`. It prints the normalized ATen graph,
+writes `attention-graph-2x2x4x8.dot` and `.svg`, and checks that the exported
+module produces the same result as eager execution.
+
+`attention-graph-symbolic-dimension.py` exports the same attention module with
+a symbolic sequence length constrained to the range 2 through 16. It prints
+the normalized ATen graph and its range constraints, writes a shape-named DOT
+and SVG pair, and checks the exported module with sequence lengths 4 and 8.
 
 ## Inspect compilation output
 
