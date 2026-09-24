@@ -1,5 +1,5 @@
 import torch
-from utilities import force_cpu_requested, get_device, time_function
+from utilities import get_device, time_function
 
 
 def sin_cos(x):
@@ -9,7 +9,7 @@ def sin_cos(x):
 
 
 def main():
-    device_string = get_device(force_cpu=force_cpu_requested())
+    device_string = get_device()
     print(f"Using device: {device_string}")
     new_fn = torch.compile(sin_cos, backend="inductor")
     input_tensor = torch.randn(10000, device=device_string)

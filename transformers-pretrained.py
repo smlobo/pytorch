@@ -4,7 +4,7 @@ import argparse
 
 import torch
 
-from utilities import force_cpu_requested, get_device, time_function
+from utilities import get_device, time_function
 
 
 MODEL_ID = "bert-base-uncased"
@@ -21,7 +21,7 @@ def main():
     if args.iterations < 1:
         parser.error("--iterations must be positive")
 
-    device = get_device(force_cpu=force_cpu_requested())
+    device = get_device()
     print(f"Using device: {device}")
 
     from transformers import AutoModel, AutoTokenizer

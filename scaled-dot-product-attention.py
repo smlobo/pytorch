@@ -1,6 +1,6 @@
 import torch
 import math
-from utilities import force_cpu_requested, get_device, time_function
+from utilities import get_device
 
 
 # B == batch size
@@ -44,12 +44,13 @@ def scaled_dot_product_attention(queries, keys, values):
 
 
 def main():
-    device_string = get_device(force_cpu=force_cpu_requested())
+    device_string = get_device()
     print(f"Using device: {device_string}")
     q, k, v = generate(device=device_string)
     this = scaled_dot_product_attention(q, k, v)
     that = torch.nn.functional.scaled_dot_product_attention(
-        q, k, v, dropout_p=0.0)
+        q, k, v, dropout_p=0.0
+    )
     print(f"My scaled dot product:\n{this[:, :, :2, :4]}")
     print(f"Torch scaled dot product:\n{that[:, :, :2, :4]}")
     torch.testing.assert_close(this, that)

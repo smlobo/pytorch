@@ -4,7 +4,7 @@ import argparse
 
 import torch
 
-from utilities import force_cpu_requested, get_device, time_function
+from utilities import get_device, time_function
 
 
 def main():
@@ -14,7 +14,7 @@ def main():
     )
     parser.parse_args()
 
-    device = get_device(force_cpu=force_cpu_requested())
+    device = get_device()
     print(f"Using device: {device}")
 
     from torchvision.models import resnet50

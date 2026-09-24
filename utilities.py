@@ -2,8 +2,10 @@
 
 import sys
 import time
+from pathlib import Path
 
 import torch
+from torch.fx.passes.graph_drawer import FxGraphDrawer
 
 
 def force_cpu_requested() -> bool:
@@ -11,9 +13,9 @@ def force_cpu_requested() -> bool:
     return "--cpu" in sys.argv[1:]
 
 
-def get_device(force_cpu: bool = False) -> str:
+def get_device() -> str:
     """Return the best available device name: cuda, mps, or cpu."""
-    if force_cpu:
+    if force_cpu_requested():
         return "cpu"
     if torch.cuda.is_available():
         return "cuda"
@@ -53,3 +55,24 @@ def time_function(
         f"{elapsed / iterations * 1000:.3f} ms/run"
     )
     return result
+
+
+def draw_dot_svg_graph(graph_module, name, example_inputs):
+    """Write DOT and SVG graphs with the first tensor's shape in the name."""
+    tensor = next(
+        value
+        for value in example_inputs
+        if isinstance(value, torch.Tensor)
+    )
+    shape = "x".join(str(size) for size in tensor.shape)
+    output_name = f"{name}-{shape}"
+
+    dot = FxGraphDrawer(
+        graph_module, output_name.replace("-", "_")
+    ).get_dot_graph()
+    output_base = Path(__file__).with_name(output_name)
+    dot_path = output_base.with_suffix(".dot")
+    svg_path = output_base.with_suffix(".svg")
+    dot_path.write_text(dot.to_string())
+    dot.write_svg(str(svg_path))
+    print(f"Wrote {dot_path.name} and {svg_path.name}")
