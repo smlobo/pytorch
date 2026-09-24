@@ -57,15 +57,17 @@ def time_function(
     return result
 
 
-def draw_dot_svg_graph(graph_module, name, example_inputs):
-    """Write DOT and SVG graphs with the first tensor's shape in the name."""
-    tensor = next(
-        value
-        for value in example_inputs
-        if isinstance(value, torch.Tensor)
-    )
-    shape = "x".join(str(size) for size in tensor.shape)
-    output_name = f"{name}-{shape}"
+def draw_dot_svg_graph(graph_module, name, example_inputs=None):
+    """Write DOT and SVG graphs, including an input shape when provided."""
+    output_name = name
+    if example_inputs is not None:
+        tensor = next(
+            value
+            for value in example_inputs
+            if isinstance(value, torch.Tensor)
+        )
+        shape = "x".join(str(size) for size in tensor.shape)
+        output_name = f"{name}-{shape}"
 
     dot = FxGraphDrawer(
         graph_module, output_name.replace("-", "_")
