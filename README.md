@@ -105,6 +105,10 @@ a symbolic sequence length constrained to the range 2 through 16. It prints
 the normalized ATen graph and its range constraints, writes a shape-named DOT
 and SVG pair, and checks the exported module with sequence lengths 4 and 8.
 
+`core-aten-lowering.py` continues the previous examples adding PyTorch lowering
+via the `run_decompositions()` method. Operations like `matmul` & `transpose`
+are expanded & transformed.
+
 ## Inspect compilation output
 
 Set `TORCH_COMPILE_DEBUG=1` when running an example to see compiler debug
