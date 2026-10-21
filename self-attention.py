@@ -5,7 +5,7 @@ from utilities import get_device
 # T == tokens per sequence
 # D == input features per token / input_dim
 # H == total projected (hidden) feature width / projection_dim
-# num_heads == number of atention heads
+# num_heads == number of attention heads
 B, T, D, H, num_heads = 2, 4, 8, 16, 2
 
 
