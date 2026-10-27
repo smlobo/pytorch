@@ -50,7 +50,7 @@ def manual_attention(q, k, v, causal=False):
             # Verify row sums to 1.0
             assert math.isclose(row_sum, 1.0, rel_tol=1e-6)
 
-        print(f"Probabilities:\n{probabilities[:, :, :, :]}")
+        # print(f"Probabilities:\n{probabilities[:, :, :, :]}")
 
     return probabilities @ v                        # [2,2,4,8]
 

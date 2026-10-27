@@ -2,6 +2,7 @@
 *.dot
 *.svg
 torch_compile_debug/
+.idea
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
