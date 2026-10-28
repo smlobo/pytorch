@@ -78,3 +78,10 @@ def draw_dot_svg_graph(graph_module, name, example_inputs=None):
     dot_path.write_text(dot.to_string())
     dot.write_svg(str(svg_path))
     print(f"Wrote {dot_path.name} and {svg_path.name}")
+
+
+def inspect_backend(graph_module, example_inputs, filename, dump=True):
+    if dump:
+        print(graph_module.graph)
+    draw_dot_svg_graph(graph_module, filename, example_inputs)
+    return graph_module.forward

@@ -1,4 +1,5 @@
 # Sheldon
+*.txt
 *.dot
 *.svg
 torch_compile_debug/

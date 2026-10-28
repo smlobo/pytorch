@@ -66,6 +66,39 @@ attention heads. It implements scaled dot product attention from matrix
 multiplication, scaling, and softmax, then checks its output against
 `torch.nn.functional.scaled_dot_product_attention`.
 
+### Backend and device checks
+
+`list-backends.py` prints the backends registered for `torch.compile`.
+`check-cuda.py` reports whether this PyTorch installation can use CUDA and,
+when a CUDA device is available, runs a small tensor operation on it.
+
+### Causal attention and training
+
+`causal_attention.py` implements scaled dot product attention with an optional
+causal mask, then compares its causal result with PyTorch's SDPA operation.
+`causal-attention-rect.py` extends the example to different query and
+key/value sequence lengths and checks that changing future keys and values
+does not affect earlier causal outputs.
+
+`self-attention.py` builds a small causal self-attention module from linear
+projections and SDPA, then runs a single AdamW training step and reports a
+gradient norm and whether a weight changed.
+
+`self_attention_gradient_comparison.py` compares manual attention with
+PyTorch SDPA in float64, checking both forward outputs, losses, and parameter
+gradients.
+
+`self_attention_compile_guards.py` runs a small self-attention model at
+several sequence lengths and compares eager execution with `torch.compile`.
+Its `--dynamic` option accepts `false` (the default), `none`, or `true` and
+passes the corresponding value to `torch.compile`. It also exports the model
+with a symbolic sequence dimension and compares the exported module's output.
+For example:
+
+```sh
+python self_attention_compile_guards.py --dynamic true
+```
+
 ## Draw computation graphs
 
 The graph examples use `pydot` and the Graphviz `dot` executable to write
@@ -116,7 +149,14 @@ messages and save compilation artifacts:
 
 ```sh
 TORCH_COMPILE_DEBUG=1 python sin-cos-tensor.py
+TORCHINDUCTOR_FX_GRAPH_CACHE=0 TORCH_COMPILE_DEBUG=1 TORCH_LOGS="guards,recompiles" python self_attention_compile_guards.py 2> file.log
+TORCHINDUCTOR_FX_GRAPH_CACHE=0 TORCH_COMPILE_DEBUG=1 TORCH_LOGS="guards,recompiles" TORCH_LOGS_FORMAT="[%(levelname)s] [%(pathname)s/%(filename)s:%(lineno)s] [%(name)s] %(message)s" python self_attention_compile_guards.py 2> file.log
 ```
+
+TORCH_LOGS options:
+- output_code
+- guards
+- recompiles
 
 PyTorch writes a `torch_compile_debug/run_.../` directory in the current
 directory. Look under its `torchinductor/` subdirectories for
