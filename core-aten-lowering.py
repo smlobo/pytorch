@@ -49,28 +49,32 @@ def main():
         model, (q4, k4, v4), dynamic_shapes=dynamic_shapes
     )
 
-    # print(exported.graph_module.print_readable(print_output=False))
-    print(f"Graph constraints: {exported.range_constraints}")
-
     core = exported.run_decompositions(decomp_table=None)
 
     print("Original operators:")
     print([str(n.target) for n in exported.graph_module.graph.nodes
            if n.op == "call_function"])
+    # print(exported.graph_module.print_readable(print_output=False))
+    # print(f"Graph constraints: {exported.range_constraints}")
+    draw_dot_svg_graph(
+        exported.graph_module,
+        f'{Path(__file__).stem}-original',
+        (q4, k4, v4),
+    )
 
     print("Core ATen operators:")
     print([str(n.target) for n in core.graph_module.graph.nodes
            if n.op == "call_function"])
-
-    print(core.graph_module.print_readable(print_output=False))
-    print(f"Graph constraints: {core.range_constraints}")
+    # print(core.graph_module.print_readable(print_output=False))
+    # print(f"Graph constraints: {core.range_constraints}")
+    draw_dot_svg_graph(
+        core.graph_module,
+        f'{Path(__file__).stem}-coreATen',
+        (q4, k4, v4),
+    )
 
     for inputs in ((q4, k4, v4), (q8, k8, v8)):
         torch.testing.assert_close(core.module()(*inputs), model(*inputs))
-
-    draw_dot_svg_graph(
-        core.graph_module, Path(__file__).stem, (q4, k4, v4)
-    )
 
 
 if __name__ == "__main__":

@@ -37,7 +37,7 @@ def generate(device="cpu"):
 
 def scaled_dot_product_attention(queries, keys, values):
     scores = queries @ keys.transpose(-2, -1)       # [2, 2, 4, 4]
-    scaled_scores = scores / math.sqrt(head_width)
+    scaled_scores = scores / math.sqrt(queries.shape[-1])
     weights = torch.softmax(scaled_scores, dim=-1)  # [2, 2, 4, 4]
     output = weights @ values                       # [2, 2, 4, 8]
     return output
